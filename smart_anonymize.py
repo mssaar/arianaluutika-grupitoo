@@ -64,7 +64,18 @@ def anonymize_cell(col_name, val):
     if "isik" in col_lower or re.match(r'^[A-ZŠŽÜÕÖÄ]+\s*,\s*[A-ZŠŽÜÕÖÄa-zšžüõöä]+$', val_str) or normalize_name(val_str) in person_map:
         norm_val = normalize_name(val_str)
         if norm_val not in person_map:
-            person_map[norm_val] = f"Töötaja {counter_person}"
+            import random
+            if not hasattr(anonymize_cell, 'names_pool'):
+                firsts = ["Marek", "Kristo", "Martin", "Andres", "Jaanus", "Tarmo", "Peeter", "Margus", "Raido", "Kaspar", "Marko", "Oliver", "Rasmus", "Sander", "Toomas", "Lauri", "Siim", "Taavi", "Rene", "Tõnis", "Laura", "Kadri", "Kati", "Anna"]
+                lasts = ["Tamm", "Mägi", "Kask", "Kukk", "Ilves", "Karu", "Pärn", "Lepp", "Lepik", "Oja", "Raud", "Koppel", "Kuusk", "Luik", "Rebane", "Sepp", "Põder", "Saar"]
+                anonymize_cell.names_pool = [f"{f} {l}" for f in firsts for l in lasts]
+                random.seed(42)
+                random.shuffle(anonymize_cell.names_pool)
+            
+            if anonymize_cell.names_pool:
+                person_map[norm_val] = anonymize_cell.names_pool.pop()
+            else:
+                person_map[norm_val] = f"Töötaja {counter_person}"
             counter_person += 1
         return person_map[norm_val]
         
