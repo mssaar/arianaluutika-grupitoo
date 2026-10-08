@@ -1,41 +1,44 @@
 # Power BI Juhised Grupile
 
 See fail sisaldab tehnilisi juhiseid, kuidas luua Power BI Dashboard valmis eeltöödeldud andmete põhjal. 
-Oleme teie jaoks teinud kõige raskema andmetöötluse juba ära! Palkade, tundide, erandite, üldkulu ja projektipõhise marginaali arvutamise keeruline loogika on eeltöödeldud otse ühte koondfaili.
+Oleme teie jaoks teinud kõige raskema andmetöötluse juba ära!
 
 ## 1. Mida ja kust laadida?
-Kõik vajalik asub `andmed/` kaustas. Kõige olulisem fail, mida Power BI-s kasutada, on **`PowerBI_Koondandmed.csv`**.
+Kõik vajalik asub ndmed/ kaustas. Seal on neli valmis genereeritud CSV-faili, mida saate otse Power BI-sse tõmmata ilma lisatöötluseta:
+
+1. **PowerBI_Koondandmed.csv**
+   Kõik ettevõtte tulud ja kulud detailse reatasemega. Siin on ka töötajate otsene palgakulu ja üldkulu (jaotatud proportsionaalselt) juba objektidele otsa arvutatud!
+
+2. **PowerBI_Projekti_Koond.csv**
+   Iga projekti kohta üks rida: kogu tulu, kogu kulu, kasum (eurodes) ja kasumimarginaal (protsentides). Suurepärane kiireteks tulpdiagrammideks ja KPI-deks.
+
+3. **PowerBI_Tootaja_Tunnihind.csv**
+   Iga töötaja tegelik tunnihind iga kuu lõikes. Sisaldab ka 	yyp veergu anomaaliate filtreerimiseks (1 = alla 10 eur, 2 = üle 30 eur). 
+
+4. **PowerBI_Palgakulu_Kuupohiselt.csv**
+   Lihtne kahe veeruga tabel: kuu ja ettevõtte kogu palgafond. Hea kuise palgakulu dünaamika (joondiagramm) kuvamiseks.
 
 **Power BI sammud:**
 1. Ava Power BI Desktop.
-2. Vali "Get Data" -> "Text/CSV" ja vali `andmed/PowerBI_Koondandmed.csv`.
-3. Selles tabelis on koos nii reaalsed projektide tulud-kulud kui ka proportsionaalselt jaotatud palgakulu (otsene kulu ja üldkulu).
-   * **Veerg `summa`**: sisaldab finantsilist väärtust (tulud on positiivsed, kulud on negatiivsed).
-   * **Veerg `projekti_kood`**: unikaalne projekti identifikaator (või "KONTO_YLDKULU" vms abirida).
-   * **Veerg `nimetus`**: projekti või kulu nimetus.
-   * **Veerg `kuu`**: kalendrikuu (nt "202401").
-   * **Veerg `konto_nimetus`**: tulude/kulude raamatupidamislik sisu.
-
-*(Soovi korral võite juurde laadida ka faili `PowerBI_Kuud.csv`, mis sisaldab igakuiseid agregeeritud KPI-sid nagu kogu palgafond, keskmine tunnihind jne. See on abiks, kui tahate eraldiseisvaid "High-level" kaarte teha).*
+2. Vali "Get Data" -> "Text/CSV" ja lae kõik neli tabelit.
 
 ## 2. Milliseid visuaale ehitada?
-Vastavalt meie `Executive_Summary.md` failile, peab Dashboard olema suunatud juhatusele (selge ja ilma liigse mürata). Soovitatavad visuaalid:
 
-1. **KPI Kaardid (High-level ülevaade kogu ettevõtte kohta):**
-   - **Kogukasum / Marginaal:** Loo DAX mõõdik `Total = SUM(PowerBI_Koondandmed[summa])`.
-   - **Kogukulud vs Tulud:** Filtreeri summa vastavalt sellele, kas see on positiivne (tulu) või negatiivne (kulu).
+Vastavalt algsele R-projektile ja Executive Summaryle, võite luua sarnased visuaalid:
 
-2. **Projektide tasuvus (Scatter Plot või Clustered Bar Chart):**
-   - **Telg (Axis):** Projekti `nimetus`.
-   - **Väärtus (Values):** `summa` (kui see on negatiivne, on projekt kahjumis).
-   - *Filtreeri välja* (Exclude) read, kus `projekti_kood` pole otseselt projekt, näiteks üldkulude rida. See näitab selgelt, millised projektid toovad kasumit.
+1. **Projektide tasuvus (Bar Chart):**
+   - Kasuta PowerBI_Projekti_Koond.csv tabelit.
+   - Sorteeri projektid kasumi (või kasumimarginaali) järgi. Nii näeb juhtkond kohe kõige tulusamaid ja kõige kahjumlikumaid objekte.
 
-3. **Kulustruktuur (Donut Chart või Waterfall Chart):**
-   - **Kategooria (Legend):** `konto_nimetus`.
-   - **Väärtus (Values):** `summa` (ainult negatiivsed väärtused).
-   - Näitab juhtkonnale visuaalselt, kas suurim kulu on töötasu (otsene või üldkulu jaotus) või hoopis materjalikulu (abimaterjalid jne).
+2. **Töötajate tunnihinna anomaaliad (Table / Matrix):**
+   - Kasuta PowerBI_Tootaja_Tunnihind.csv.
+   - Filtreeri välja read, kus 	yyp on 0 (jäta ainult 1 ja 2). See toob välja vead tööaja raporteerimisel või ekstreemsed ületunnid.
+
+3. **Kuine palgakulu ja kulujaotus (Line / Donut Chart):**
+   - Kasuta PowerBI_Palgakulu_Kuupohiselt.csv kuu kaupa palgafondi trendi näitamiseks.
+   - Kasuta PowerBI_Koondandmed.csv kulu- ja tulustruktuuri visualiseerimiseks (Donut Chart: Legend = konto_nimetus).
 
 ## 3. Lõppviimistlus
-- Palun kasutage loetavaid ja juhtkonnale harjumuspäraseid värve (nt roheline positiivse kasumi/tulu puhul, punane kahjumi/kulu puhul).
+- Palun kasutage loetavaid ja juhtkonnale harjumuspäraseid värve (nt roheline positiivse kasumi puhul, punane kahjumi puhul).
 - Jälgige disainis visuaalset hierarhiat – olulised numbrid (KPI-d) suuremalt ülal, detailsemad graafikud all.
-- Valmis töö salvestage `.pbix` failina. Jõudu tööle!
+- Valmis töö salvestage .pbix failina.
